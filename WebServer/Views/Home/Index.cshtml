@@ -1,0 +1,85 @@
+﻿@section Styles {
+    <style>
+
+    </style>
+}
+
+<div class="container mt-5">
+    <div class="card container">
+        <div class="card-body">
+            <div class="col-xl-11 col-lg-10 col-md-9 col-12 ">
+                <div class="row align-items-center mt-5">
+                    <div class="col-md-2 col-xxl-1">
+                        <label for="inputText" class="col-form-label ">訊息</label>
+                    </div>
+                    <div class="col-md-8 col-xxl-9  mt-0 mt-md-3">
+                        <input type="text" id="inputText" class="form-control" aria-describedby="inputText">
+                    </div>
+                </div>
+                <div class="row align-items-center mt-5">
+                    <div class="col-md-2 col-xxl-1">
+                        <label for="inputFiles" class="col-form-label ">檔案</label>
+                    </div>
+                    <div class="col-md-8 col-xxl-9  mt-0 mt-md-3">
+                        <input type="file" id="inputFiles" class="form-control" aria-describedby="inputFiles">
+                    </div>
+                    <div class="col-md-2 col-xxl-2">
+                        <button id="btnUpload" class="btn btn-primary">上傳</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(async () => {
+            $(document).on('click', '#btnUpload', async function (e) {
+                if ($('#inputText').val().length === 0) {
+                    alert('請輸入訊息!');
+                }
+                else if ($('#inputFiles')[0].files.length === 0) {
+                    alert('請選擇檔案!');
+                }
+                else {
+                    //清空畫面
+                    $('.divImage').empty();
+
+                    let formData = new FormData();
+                    //將檔案放至FormData
+                    for (let i = 0; i < $('#inputFiles')[0].files.length; i++) {
+                        formData.append('file', $('#inputFiles')[0].files[i]);
+                    }
+                    //將訊息放至FormData
+                    formData.append('message', $('#inputText').val());
+
+                    //上傳檔案
+                    const url = `/Streaming/LINENotify`;
+                    const result = await uploadFile(url, formData);
+                    $('#inputFiles')[0].value = '';
+
+                    if (result.status == 200) {
+                        console.log(result.body);
+                    } else {
+                        alert('錯誤： ' + JSON.stringify(result.body.File));
+                    }
+                }
+            });
+        });
+
+        async function uploadFile(url, data) {
+            try {
+                let settings = {
+                    method: 'post',
+                    body: data,
+                };
+                const fetchResponse = await fetch(`${url}`, settings).then(r => r.json().then(data => ({ status: r.status, body: data })));
+                return fetchResponse;
+            } catch (e) {
+                console.log(e)
+                return e;
+            }
+        }
+    </script>
+}
